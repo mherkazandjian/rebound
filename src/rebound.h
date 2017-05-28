@@ -278,16 +278,17 @@ struct reb_simulation_integrator_whfast {
     unsigned int corrector;
 
     /** 
-     * @brief Setting this flag to one will recalculate Jacobi coordinates from the particle structure in the next timestep. 
+     * @brief Setting this flag to one will recalculate Jacobi/heliocentric coordinates from the particle structure in the next timestep. 
      * @details After the timestep, the flag gets set back to 0. 
      * If you want to change particles after every timestep, you 
      * also need to set this flag to 1 before every timestep.
      * Default is 0.
      */ 
-    unsigned int recalculate_jacobi_this_timestep;
+    unsigned int recalculate_coordinates_this_timestep;
 
     /**
-     * @brief If this flag is set (the default), whfast will recalculate jacobi coordinates and synchronize
+     * @brief If this flag is set (the default), whfast will recalculate 
+     * jacobi/heliocentric coordinates and synchronize
      * every timestep, to avoid problems with outputs or particle modifications
      * between timesteps. 
      * @details Setting it to 0 will result in a speedup, but care
@@ -299,16 +300,18 @@ struct reb_simulation_integrator_whfast {
     unsigned int safe_mode;
 
     /**
-     * @brief Jacobi coordinates
-     * @details This array contains the Jacobi coordinates of all particles.
+     * @brief Jacobi/heliocentric coordinates
+     * @details This array contains the Jacobi/heliocentric
+     * coordinates of all particles.
      * It is automatically filled and updated by WHfast.
      * Access this array with caution.
      */
-    struct reb_particle* restrict p_j;
+    struct reb_particle* restrict p_jh;
     
     /**
-     * @brief Generate inertial coordinates at the end of the integration, but do not change the Jacobi coordinates
-     * @details Danger zone! Only use this flag if you are absolutely sure what you are doing. This is intended for
+     * @brief Generate inertial coordinates at the end of the integration, but do not change the Jacobi/heliocentric coordinates
+     * @details Danger zone! Only use this flag if you are absolutely sure
+     * what you are doing. This is intended for
      * simulation which have to be reproducible on a bit by bit basis.
      */
     unsigned int keep_unsynchronized;
@@ -317,62 +320,15 @@ struct reb_simulation_integrator_whfast {
      * @cond PRIVATE
      * Internal data structures below. Nothing to be changed by the user.
      */
-    double* restrict eta;       ///< Struct containg Jacobi eta parameters 
 
     unsigned int is_synchronized;   ///< Flag to determine if current particle structure is synchronized
     unsigned int allocated_N;   ///< Space allocated in arrays
     unsigned int timestep_warning;  ///< Counter of timestep warnings
-    unsigned int recalculate_jacobi_but_not_synchronized_warning;   ///< Counter of Jacobi synchronization errors
+    unsigned int recalculate_coordinates_but_not_synchronized_warning;   ///< Counter of Jacobi synchronization errors
     /**
      * @endcond
      */
 };
-
-struct reb_simulation_integrator_whfasthelio {
-    /** 
-     * @brief Setting this flag to one will recalculate heliocentric coordinates from the particle structure in the next timestep. 
-     * @details After the timestep, the flag gets set back to 0. 
-     * If you want to change particles after every timestep, you 
-     * also need to set this flag to 1 before every timestep.
-     * Default is 0.
-     */ 
-    unsigned int recalculate_heliocentric_this_timestep;
-    /**
-     * @brief If this flag is set (the default), WHFastHelio will recalculate heliocentric
-     * coordinates and synchronize every timestep, to avoid problems with outputs or 
-     * particle modifications between timesteps. 
-     * @details Setting it to 0 will result in a speedup, but care
-     * must be taken to synchronize and recalculate heliocentric coordinates when needed.
-     */
-    unsigned int safe_mode;
-
-    /**
-     * @brief Heliocentric coordinates
-     * @details This array contains the heliocentric coordinates of all particles.
-     * It is automatically filled and updated by WHfastDemocratic.
-     * Access this array with caution.
-     */
-    struct reb_particle* restrict p_h;
-    
-    /**
-     * @brief Generate inertial coordinates at the end of the integration, but do not change the Heliocentric coordinates
-     * @details Danger zone! Only use this flag if you are absolutely sure what you are doing. This is intended for
-     * simulation which have to be reproducible on a bit by bit basis.
-     */
-    unsigned int keep_unsynchronized;
-
-    /**
-     * @cond PRIVATE
-     * Internal data structures below. Nothing to be changed by the user.
-     */
-    unsigned int allocated_N;   ///< Space allocated in arrays
-    unsigned int is_synchronized;   ///< Flag to determine if current particle structure is synchronized
-    unsigned int recalculate_heliocentric_but_not_synchronized_warning;   ///< Counter of heliocentric synchronization errors
-    /**
-     * @endcond
-     */
-};
-/** @} */
 
 
 /**
@@ -844,7 +800,6 @@ struct reb_simulation {
         REB_INTEGRATOR_SEI = 2,      ///< SEI integrator for shearing sheet simulations, symplectic, needs OMEGA variable
         REB_INTEGRATOR_LEAPFROG = 4, ///< LEAPFROG integrator, simple, 2nd order, symplectic
         REB_INTEGRATOR_HERMES = 5,   ///< HERMES Integrator for close encounters (experimental)
-        REB_INTEGRATOR_WHFASTHELIO = 6,   ///< WHFastHelio integrator, symplectic, 2nd order, in democratic heliocentric coordinates
         REB_INTEGRATOR_NONE = 7,     ///< Do not integrate anything
         REB_INTEGRATOR_JANUS = 8,    ///< Bit-wise reversible JANUS integrator.
         REB_INTEGRATOR_MERCURIUS = 9,///< MERCURIUS integrator 
@@ -882,7 +837,6 @@ struct reb_simulation {
     struct reb_simulation_integrator_ias15 ri_ias15;    ///< The IAS15 struct
     struct reb_simulation_integrator_hermes ri_hermes;    ///< The HERMES struct
     struct reb_simulation_integrator_mercurius ri_mercurius;      ///< The MERCURIUS struct
-    struct reb_simulation_integrator_whfasthelio ri_whfasthelio;  ///< The WHFastDemocratic struct 
     struct reb_simulation_integrator_janus ri_janus;    ///< The JANUS struct 
     /** @} */
 
@@ -1870,7 +1824,6 @@ struct reb_display_data {
     double* eta_copy;
     unsigned long allocated_N;
     unsigned long allocated_N_whfast;
-    unsigned long allocated_N_whfasthelio;
     unsigned long allocated_N_mercurius;
     unsigned int opengl_enabled;
     double scale;

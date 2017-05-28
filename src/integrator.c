@@ -37,7 +37,6 @@
 #include "output.h"
 #include "integrator.h"
 #include "integrator_whfast.h"
-#include "integrator_whfasthelio.h"
 #include "integrator_ias15.h"
 #include "integrator_hermes.h"
 #include "integrator_mercurius.h"
@@ -58,9 +57,6 @@ void reb_integrator_part1(struct reb_simulation* r){
 			break;
 		case REB_INTEGRATOR_WHFAST:
 			reb_integrator_whfast_part1(r);
-			break;
-		case REB_INTEGRATOR_WHFASTHELIO:
-			reb_integrator_whfasthelio_part1(r);
 			break;
 		case REB_INTEGRATOR_HERMES:
 			reb_integrator_hermes_part1(r);
@@ -90,9 +86,6 @@ void reb_integrator_part2(struct reb_simulation* r){
 		case REB_INTEGRATOR_WHFAST:
 			reb_integrator_whfast_part2(r);
 			break;
-		case REB_INTEGRATOR_WHFASTHELIO:
-			reb_integrator_whfasthelio_part2(r);
-			break;
 		case REB_INTEGRATOR_HERMES:
 			reb_integrator_hermes_part2(r);
 			break;
@@ -120,9 +113,6 @@ void reb_integrator_synchronize(struct reb_simulation* r){
 			break;
 		case REB_INTEGRATOR_WHFAST:
 			reb_integrator_whfast_synchronize(r);
-			break;
-		case REB_INTEGRATOR_WHFASTHELIO:
-			reb_integrator_whfasthelio_synchronize(r);
 			break;
 		case REB_INTEGRATOR_HERMES:
 			reb_integrator_hermes_synchronize(r);
@@ -156,7 +146,6 @@ void reb_integrator_reset(struct reb_simulation* r){
 	reb_integrator_leapfrog_reset(r);
 	reb_integrator_sei_reset(r);
 	reb_integrator_whfast_reset(r);
-	reb_integrator_whfasthelio_reset(r);
 	reb_integrator_janus_reset(r);
 }
 

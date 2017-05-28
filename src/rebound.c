@@ -38,7 +38,6 @@
 #include "rebound.h"
 #include "integrator.h"
 #include "integrator_whfast.h"
-#include "integrator_whfasthelio.h"
 #include "integrator_ias15.h"
 #include "integrator_hermes.h"
 #include "integrator_mercurius.h"
@@ -73,8 +72,7 @@ void reb_step(struct reb_simulation* const r){
     if (r->pre_timestep_modifications){
         reb_integrator_synchronize(r);
         r->pre_timestep_modifications(r);
-        r->ri_whfast.recalculate_jacobi_this_timestep = 1;
-        r->ri_whfasthelio.recalculate_heliocentric_this_timestep = 1;
+        r->ri_whfast.recalculate_coordinates_this_timestep = 1;
     }
     
     reb_integrator_part1(r);
@@ -129,8 +127,7 @@ void reb_step(struct reb_simulation* const r){
     if (r->post_timestep_modifications){
         reb_integrator_synchronize(r);
         r->post_timestep_modifications(r);
-        r->ri_whfast.recalculate_jacobi_this_timestep = 1;
-        r->ri_whfasthelio.recalculate_heliocentric_this_timestep = 1;
+        r->ri_whfast.recalculate_coordinates_this_timestep = 1;
     }
     PROFILING_STOP(PROFILING_CAT_INTEGRATOR)
 
@@ -284,7 +281,6 @@ void reb_free_pointers(struct reb_simulation* const r){
     free(r->gravity_cs  );
     free(r->collisions  );
     reb_integrator_whfast_reset(r);
-    reb_integrator_whfasthelio_reset(r);
     reb_integrator_ias15_reset(r);
     reb_integrator_mercurius_reset(r);
     free(r->particles   );
@@ -311,13 +307,8 @@ void reb_reset_temporary_pointers(struct reb_simulation* const r){
     r->allocatedN_lookup = 0;
     // ********** WHFAST
     r->ri_whfast.allocated_N    = 0;
-    r->ri_whfast.eta            = NULL;
-    r->ri_whfast.p_j            = NULL;
+    r->ri_whfast.p_jh           = NULL;
     r->ri_whfast.keep_unsynchronized = 0;
-    // ********** WHFASTHELIO
-    r->ri_whfasthelio.allocated_N  = 0;
-    r->ri_whfasthelio.p_h          = NULL;
-    r->ri_whfasthelio.keep_unsynchronized = 0;
     // ********** IAS15
     r->ri_ias15.allocatedN      = 0;
     set_dp7_null(&(r->ri_ias15.g));
@@ -466,15 +457,10 @@ void reb_init_simulation(struct reb_simulation* r){
     // will be slower and less accurate
     r->ri_whfast.corrector = 0;
     r->ri_whfast.safe_mode = 1;
-    r->ri_whfast.recalculate_jacobi_this_timestep = 0;
+    r->ri_whfast.recalculate_coordinates_this_timestep = 0;
     r->ri_whfast.is_synchronized = 1;
     r->ri_whfast.timestep_warning = 0;
-    r->ri_whfast.recalculate_jacobi_but_not_synchronized_warning = 0;
-    // ********** WHFASTHELIO
-    r->ri_whfasthelio.safe_mode = 1;
-    r->ri_whfasthelio.is_synchronized = 1;
-    r->ri_whfasthelio.recalculate_heliocentric_this_timestep = 0;
-    r->ri_whfasthelio.recalculate_heliocentric_but_not_synchronized_warning = 0;
+    r->ri_whfast.recalculate_coordinates_but_not_synchronized_warning = 0;
     
     // ********** IAS15
     r->ri_ias15.epsilon         = 1e-9;
