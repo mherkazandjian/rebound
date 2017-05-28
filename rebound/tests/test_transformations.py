@@ -99,20 +99,18 @@ class TestTransformations(unittest.TestCase):
         p = ctypes.cast(elems,ctypes.POINTER(rebound.Particle))
         
         elemse = (ctypes.c_double * sim.N)()
-        eta = ctypes.cast(elemse,ctypes.POINTER(ctypes.c_double))
 
         c0 = getc(sim)
 
         cl = rebound.clibrebound
-        cl.reb_transformations_calculate_jacobi_eta(sim._particles,eta,sim.N)
         
         
-        cl.reb_transformations_inertial_to_jacobi_posvel(sim._particles,p,eta,sim._particles,sim.N)
+        cl.reb_transformations_inertial_to_jacobi_posvel(sim._particles,p,sim._particles,sim.N)
 
         for i in range(sim.N):
             sim.particles[i].x = 1234.
             sim.particles[i].vx = 1234.
-        cl.reb_transformations_jacobi_to_inertial_posvel(sim._particles,p,eta,sim._particles,sim.N)
+        cl.reb_transformations_jacobi_to_inertial_posvel(sim._particles,p,sim._particles,sim.N)
         
         c1 = getc(sim)
         
@@ -121,7 +119,7 @@ class TestTransformations(unittest.TestCase):
         
         for i in range(sim.N):
             sim.particles[i].x = 1234.
-        cl.reb_transformations_jacobi_to_inertial_pos(sim._particles,p,eta,sim._particles,sim.N)
+        cl.reb_transformations_jacobi_to_inertial_pos(sim._particles,p,sim._particles,sim.N)
         
         c1 = getc(sim)
         

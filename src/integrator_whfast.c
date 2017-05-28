@@ -628,6 +628,7 @@ void reb_integrator_whfast_part2(struct reb_simulation* const r){
 void reb_integrator_whfast_reset(struct reb_simulation* const r){
     struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
     ri_whfast->corrector = 0;
+    ri_whfast->coordinates = REB_WHFAST_COORDINATES_JACOBI;
     ri_whfast->is_synchronized = 1;
     ri_whfast->keep_unsynchronized = 0;
     ri_whfast->safe_mode = 1;

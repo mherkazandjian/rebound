@@ -276,6 +276,15 @@ struct reb_simulation_integrator_whfast {
      * - 11: uses eleventh order (ten-stage) corrector 
      */
     unsigned int corrector;
+    
+    /**
+     * @brief Chooses the coordinate system for the WHFast algorithm. Default is Jacobi Coordinates.
+     */
+    enum {
+        REB_WHFAST_COORDINATES_JACOBI = 0,          ///< Jacobi coordinates (default)
+        REB_WHFAST_COORDINATES_HELIOCENTRIC = 1,    ///< Democratic Heliocentric coordinates
+        REB_WHFAST_COORDINATES_WHDS = 2,            ///< WHDS coordinates
+        } coordinates;
 
     /** 
      * @brief Setting this flag to one will recalculate Jacobi/heliocentric coordinates from the particle structure in the next timestep. 
@@ -1595,24 +1604,6 @@ long reb_simulationarchive_estimate_size(struct reb_simulation* const r, double 
  * \name Functions to obtain various masses needed in Jacobi coordinates.
  * @{
  */
-/**
- * @brief Calculate the eta array needed by Jacobi conversion routines.
- * @param ps Particles array.
- * @param eta Array of doubles to store eta values in.
- * @param N number of particles in the array.
- */
-void reb_transformations_calculate_jacobi_eta(const struct reb_particle* const ps, double* const eta, const int N);
-
-/**
- * @brief Calculate the Jacobi masses and the eta array needed by Jacobi conversion routines.
- * @param ps Particles array.
- * @param m_j Array to store jacobi masses in.
- * @param eta Array to store eta values in.
- * @param N number of particles in the array.
- */
-void reb_transformations_calculate_jacobi_masses(const struct reb_particle* const ps, double* const m_j, double* const eta, const int N);
-/** @} */
-    
 /**
  * \name From inertial to Jacobi coordinates
  * @{

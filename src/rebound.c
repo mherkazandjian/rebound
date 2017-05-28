@@ -456,6 +456,7 @@ void reb_init_simulation(struct reb_simulation* r){
     // the defaults below are chosen to safeguard the user against spurious results, but
     // will be slower and less accurate
     r->ri_whfast.corrector = 0;
+    r->ri_whfast.coordinates = REB_WHFAST_COORDINATES_JACOBI;
     r->ri_whfast.safe_mode = 1;
     r->ri_whfast.recalculate_coordinates_this_timestep = 0;
     r->ri_whfast.is_synchronized = 1;
