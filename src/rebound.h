@@ -1620,15 +1620,14 @@ void reb_transformations_calculate_jacobi_masses(const struct reb_particle* cons
  *          and accelerations (acc) depending on what's needed.
  * @param ps Particles array with the inertial quantities to convert
  * @param p_j Particles array in which the Jacobi quantities will be stored.
- * @param eta Array of doubles such that eta[i] = sum of all masses up to and including index i
  * @param p_mass Should be the same particles array as ps for real particles. If passing variational
  * particles in ps, p_mass should be the corresponding array of real particles.
  * @param N number of particles in the array.
  */
 
-void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
-void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
-void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* const particles, struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle* const particles, struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const particles, struct reb_particle* const p_j,const struct reb_particle* const p_mass, const int N);
 /** @} */
 /**
  * \name From Jacobi to inertial coordinates
@@ -1637,14 +1636,13 @@ void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const
  *          and accelerations (acc) depending on what's needed.
  * @param ps Particles array with the inertial quantities to convert
  * @param p_j Particles array in which the Jacobi quantities will be stored.
- * @param eta Array of doubles such that eta[i] = sum of all masses up to and including index i
  * @param p_mass Should be the same particles array as ps for real particles. If passing variational
  * particles in ps, p_mass should be the corresponding array of real particles.
  * @param N number of particles in the array.
  */
-void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
-void reb_transformations_jacobi_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
-void reb_transformations_jacobi_to_inertial_acc(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_jacobi_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N);
+void reb_transformations_jacobi_to_inertial_acc(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N);
 /** @} */
 /**
  * \name From inertial to democratic heliocentric coordinates
@@ -1819,7 +1817,7 @@ struct reb_display_data {
     struct reb_particle_opengl* particle_data;
     struct reb_orbit_opengl* orbit_data;
     struct reb_particle* particles_copy;
-    struct reb_particle* p_j_copy;
+    struct reb_particle* p_jh_copy;
     struct reb_particle* p_h_copy;
     double* eta_copy;
     unsigned long allocated_N;

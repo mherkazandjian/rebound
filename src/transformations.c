@@ -38,26 +38,21 @@ void reb_transformations_calculate_jacobi_eta(const struct reb_particle* const p
       }
 }
 
-void reb_transformations_calculate_jacobi_masses(const struct reb_particle* const ps, double* const m_j, double* const eta, const int N){
-    eta[0] = ps[0].m;
-    for (unsigned int i=1;i<N;i++){
-        eta[i] = eta[i-1] + ps[i].m;
-        m_j[i] = ps[i].m*eta[i-1]/eta[i];
-    }
-    m_j[0] = eta[N-1];
-}
 
-void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    double s_x = eta[0] * particles[0].x;
-    double s_y = eta[0] * particles[0].y;
-    double s_z = eta[0] * particles[0].z;
-    double s_vx = eta[0] * particles[0].vx;
-    double s_vy = eta[0] * particles[0].vy;
-    double s_vz = eta[0] * particles[0].vz;
+void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* const particles, struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta = particles[0].m;
+    double s_x = eta * particles[0].x;
+    double s_y = eta * particles[0].y;
+    double s_z = eta * particles[0].z;
+    double s_vx = eta * particles[0].vx;
+    double s_vy = eta * particles[0].vy;
+    double s_vz = eta * particles[0].vz;
     for (unsigned int i=1;i<N;i++){
-        const double ei = 1./eta[i-1];
+        const double ei = 1./eta;
         const struct reb_particle pi = particles[i];
-        const double pme = eta[i]*ei;
+        eta += pi.m;
+        const double pme = eta*ei;
+        p_j[i].m = pi.m;
         p_j[i].x = pi.x - s_x*ei;
         p_j[i].y = pi.y - s_y*ei;
         p_j[i].z = pi.z - s_z*ei;
@@ -71,8 +66,9 @@ void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* co
         s_vy = s_vy * pme + p_mass[i].m*p_j[i].vy;
         s_vz = s_vz * pme + p_mass[i].m*p_j[i].vz;
     }
-    const double Mtotal  = eta[N-1];
+    const double Mtotal  = eta;
     const double Mtotali = 1./Mtotal;
+    p_j[0].m = Mtotal;
     p_j[0].x = s_x * Mtotali;
     p_j[0].y = s_y * Mtotali;
     p_j[0].z = s_z * Mtotali;
@@ -81,20 +77,23 @@ void reb_transformations_inertial_to_jacobi_posvel(const struct reb_particle* co
     p_j[0].vz = s_vz * Mtotali;
 }
 
-void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    double s_x = eta[0] * particles[0].x;
-    double s_y = eta[0] * particles[0].y;
-    double s_z = eta[0] * particles[0].z;
-    double s_vx = eta[0] * particles[0].vx;
-    double s_vy = eta[0] * particles[0].vy;
-    double s_vz = eta[0] * particles[0].vz;
-    double s_ax = eta[0] * particles[0].ax;
-    double s_ay = eta[0] * particles[0].ay;
-    double s_az = eta[0] * particles[0].az;
+void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle* const particles, struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta = particles[0].m;
+    double s_x = eta * particles[0].x;
+    double s_y = eta * particles[0].y;
+    double s_z = eta * particles[0].z;
+    double s_vx = eta * particles[0].vx;
+    double s_vy = eta * particles[0].vy;
+    double s_vz = eta * particles[0].vz;
+    double s_ax = eta * particles[0].ax;
+    double s_ay = eta * particles[0].ay;
+    double s_az = eta * particles[0].az;
     for (unsigned int i=1;i<N;i++){
-        const double ei = 1./eta[i-1];
+        const double ei = 1./eta;
         const struct reb_particle pi = particles[i];
-        const double pme = eta[i]*ei;
+        eta += pi.m;
+        const double pme = eta*ei;
+        p_j[i].m = pi.m;
         p_j[i].x = pi.x - s_x*ei;
         p_j[i].y = pi.y - s_y*ei;
         p_j[i].z = pi.z - s_z*ei;
@@ -114,8 +113,9 @@ void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle*
         s_ay = s_ay * pme + p_mass[i].m*p_j[i].ay;
         s_az = s_az * pme + p_mass[i].m*p_j[i].az;
     }
-    const double Mtotal  = eta[N-1];
+    const double Mtotal  = eta;
     const double Mtotali = 1./Mtotal;
+    p_j[0].m = Mtotal;
     p_j[0].x = s_x * Mtotali;
     p_j[0].y = s_y * Mtotali;
     p_j[0].z = s_z * Mtotali;
@@ -127,14 +127,16 @@ void reb_transformations_inertial_to_jacobi_posvelacc(const struct reb_particle*
     p_j[0].az = s_az * Mtotali;
 }
 
-void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const particles, struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    double s_ax = eta[0] * particles[0].ax;
-    double s_ay = eta[0] * particles[0].ay;
-    double s_az = eta[0] * particles[0].az;
+void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const particles, struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta = particles[0].m;
+    double s_ax = eta * particles[0].ax;
+    double s_ay = eta * particles[0].ay;
+    double s_az = eta * particles[0].az;
     for (unsigned int i=1;i<N;i++){
-        const double ei = 1./eta[i-1];
+        const double ei = 1./eta;
         const struct reb_particle pi = particles[i];
-        const double pme = eta[i]*ei;
+        eta += pi.m;
+        const double pme = eta*ei;
         p_j[i].ax = pi.ax - s_ax*ei;
         p_j[i].ay = pi.ay - s_ay*ei;
         p_j[i].az = pi.az - s_az*ei;
@@ -142,24 +144,24 @@ void reb_transformations_inertial_to_jacobi_acc(const struct reb_particle* const
         s_ay = s_ay * pme + p_mass[i].m*p_j[i].ay;
         s_az = s_az * pme + p_mass[i].m*p_j[i].az;
     }
-    const double Mtotal  = eta[N-1];
+    const double Mtotal  = eta;
     const double Mtotali = 1./Mtotal;
     p_j[0].ax = s_ax * Mtotali;
     p_j[0].ay = s_ay * Mtotali;
     p_j[0].az = s_az * Mtotali;
 }
 
-void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    const double Mtotal  = eta[N-1];
-    double s_x  = p_j[0].x  * Mtotal;
-    double s_y  = p_j[0].y  * Mtotal;
-    double s_z  = p_j[0].z  * Mtotal;
-    double s_vx = p_j[0].vx * Mtotal;
-    double s_vy = p_j[0].vy * Mtotal;
-    double s_vz = p_j[0].vz * Mtotal;
+void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta  = p_j[0].m;
+    double s_x  = p_j[0].x  * eta;
+    double s_y  = p_j[0].y  * eta;
+    double s_z  = p_j[0].z  * eta;
+    double s_vx = p_j[0].vx * eta;
+    double s_vy = p_j[0].vy * eta;
+    double s_vz = p_j[0].vz * eta;
     for (unsigned int i=N-1;i>0;i--){
         const struct reb_particle pji = p_j[i];
-        const double ei = 1./eta[i];
+        const double ei = 1./eta;
         s_x  = (s_x  - p_mass[i].m * pji.x ) * ei;
         s_y  = (s_y  - p_mass[i].m * pji.y ) * ei;
         s_z  = (s_z  - p_mass[i].m * pji.z ) * ei;
@@ -172,14 +174,15 @@ void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const pa
         particles[i].vx = pji.vx + s_vx;
         particles[i].vy = pji.vy + s_vy;
         particles[i].vz = pji.vz + s_vz;
-        s_x  *= eta[i-1];
-        s_y  *= eta[i-1];
-        s_z  *= eta[i-1];
-        s_vx *= eta[i-1];
-        s_vy *= eta[i-1];
-        s_vz *= eta[i-1];
+        eta -= pji.m;
+        s_x  *= eta;
+        s_y  *= eta;
+        s_z  *= eta;
+        s_vx *= eta;
+        s_vy *= eta;
+        s_vz *= eta;
     }
-    const double mi = 1./eta[0];
+    const double mi = 1./eta;
     particles[0].x  = s_x  * mi;
     particles[0].y  = s_y  * mi;
     particles[0].z  = s_z  * mi;
@@ -188,49 +191,51 @@ void reb_transformations_jacobi_to_inertial_posvel(struct reb_particle* const pa
     particles[0].vz = s_vz * mi;
 }
 
-void reb_transformations_jacobi_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    const double Mtotal  = eta[N-1];
-    double s_x  = p_j[0].x  * Mtotal;
-    double s_y  = p_j[0].y  * Mtotal;
-    double s_z  = p_j[0].z  * Mtotal;
+void reb_transformations_jacobi_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta  = p_j[0].m;
+    double s_x  = p_j[0].x  * eta;
+    double s_y  = p_j[0].y  * eta;
+    double s_z  = p_j[0].z  * eta;
     for (unsigned int i=N-1;i>0;i--){
         const struct reb_particle pji = p_j[i];
-        const double ei = 1./eta[i];
+        const double ei = 1./eta;
         s_x  = (s_x  - p_mass[i].m * pji.x ) * ei;
         s_y  = (s_y  - p_mass[i].m * pji.y ) * ei;
         s_z  = (s_z  - p_mass[i].m * pji.z ) * ei;
         particles[i].x  = pji.x  + s_x ;
         particles[i].y  = pji.y  + s_y ;
         particles[i].z  = pji.z  + s_z ;
-        s_x  *= eta[i-1];
-        s_y  *= eta[i-1];
-        s_z  *= eta[i-1];
+        eta -= pji.m;
+        s_x  *= eta;
+        s_y  *= eta;
+        s_z  *= eta;
     }
-    const double mi = 1./eta[0];
+    const double mi = 1./eta;
     particles[0].x  = s_x  * mi;
     particles[0].y  = s_y  * mi;
     particles[0].z  = s_z  * mi;
 }
 
-void reb_transformations_jacobi_to_inertial_acc(struct reb_particle* const particles, const struct reb_particle* const p_j, const double* const eta, const struct reb_particle* const p_mass, const int N){
-    const double Mtotal  = eta[N-1];
-    double s_ax  = p_j[0].ax  * Mtotal;
-    double s_ay  = p_j[0].ay  * Mtotal;
-    double s_az  = p_j[0].az  * Mtotal;
+void reb_transformations_jacobi_to_inertial_acc(struct reb_particle* const particles, const struct reb_particle* const p_j, const struct reb_particle* const p_mass, const int N){
+    double eta  = p_j[0].m;
+    double s_ax  = p_j[0].ax  * eta;
+    double s_ay  = p_j[0].ay  * eta;
+    double s_az  = p_j[0].az  * eta;
     for (unsigned int i=N-1;i>0;i--){
         const struct reb_particle pji = p_j[i];
-        const double ei = 1./eta[i];
+        const double ei = 1./eta;
         s_ax  = (s_ax  - p_mass[i].m * pji.ax ) * ei;
         s_ay  = (s_ay  - p_mass[i].m * pji.ay ) * ei;
         s_az  = (s_az  - p_mass[i].m * pji.az ) * ei;
         particles[i].ax  = pji.ax  + s_ax ;
         particles[i].ay  = pji.ay  + s_ay ;
         particles[i].az  = pji.az  + s_az ;
-        s_ax  *= eta[i-1];
-        s_ay  *= eta[i-1];
-        s_az  *= eta[i-1];
+        eta -= pji.m;
+        s_ax  *= eta;
+        s_ay  *= eta;
+        s_az  *= eta;
     }
-    const double mi = 1./eta[0];
+    const double mi = 1./eta;
     particles[0].ax  = s_ax  * mi;
     particles[0].ay  = s_ay  * mi;
     particles[0].az  = s_az  * mi;

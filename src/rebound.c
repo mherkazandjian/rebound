@@ -272,7 +272,7 @@ void reb_free_pointers(struct reb_simulation* const r){
         free(r->display_data->r_copy);
         free(r->display_data->particles_copy);
         free(r->display_data->eta_copy);
-        free(r->display_data->p_j_copy);
+        free(r->display_data->p_jh_copy);
         free(r->display_data->p_h_copy);
         free(r->display_data->particle_data);
         free(r->display_data->orbit_data);
