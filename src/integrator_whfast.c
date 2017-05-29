@@ -328,9 +328,13 @@ void kepler_step(const struct reb_simulation* const r, struct reb_particle* cons
 /***************************** 
  * Interaction Hamiltonian  */
 
-static void interaction_step(struct reb_simulation* const r, struct reb_particle* const p_j, const double G, const double softening, const double _dt, const int N_real){
+static void reb_whfast_interaction_step(struct reb_simulation* const r, const double _dt){
+    const int N_real = r->N-r->N_var;
+    const double G = r->G;
+    const double softening = r->softening;
     struct reb_particle* particles = r->particles;
     struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
+    struct reb_particle* const p_j = ri_whfast->p_jh;
     switch (ri_whfast->coordinates){
         case REB_WHFAST_COORDINATES_JACOBI:
             {
@@ -427,7 +431,7 @@ static void reb_whfast_jump_step(const struct reb_simulation* const r, const dou
 /***************************** 
  * DKD Scheme                */
 
-static void kepler_drift(const struct reb_simulation* const r, const double _dt){
+static void reb_whfast_kepler_step(const struct reb_simulation* const r, const double _dt){
     const double m0 = r->particles[0].m;
     const double G = r->G;
     const int N_real = r->N-r->N_var;
@@ -458,7 +462,7 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
     struct reb_particle* restrict const particles = r->particles;
     const int N_real = r->N-r->N_var;
-    kepler_drift(r, a);
+    reb_whfast_kepler_step(r, a);
     reb_transformations_jacobi_to_inertial_pos(particles, ri_whfast->p_jh, particles, N_real);
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];
@@ -466,8 +470,8 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     }
     r->gravity_ignore_terms = 1;
     reb_update_acceleration(r);
-    interaction_step(r, ri_whfast->p_jh, r->G, r->softening, -b, N_real);
-    kepler_drift(r, -2.*a);
+    reb_whfast_interaction_step(r, -b);
+    reb_whfast_kepler_step(r, -2.*a);
     reb_transformations_jacobi_to_inertial_pos(particles, ri_whfast->p_jh, particles, N_real);
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];
@@ -475,8 +479,8 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     }
     r->gravity_ignore_terms = 1;
     reb_update_acceleration(r);
-    interaction_step(r, ri_whfast->p_jh, r->G, r->softening, b, N_real);
-    kepler_drift(r, a);
+    reb_whfast_interaction_step(r, b);
+    reb_whfast_kepler_step(r, a);
 }
 
 void reb_whfast_apply_corrector(struct reb_simulation* r, double inv, int order, void (*corrector_Z)(struct reb_simulation*, const double, const double)){
@@ -531,6 +535,9 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
     if (r->var_config_N>0 && ri_whfast->coordinates!=REB_WHFAST_COORDINATES_JACOBI){
         reb_exit("Varitional particles are only compatible with Jacobi coordinates.");
     }
+    if (ri_whfast->corrector!=0 && ri_whfast->coordinates!=REB_WHFAST_COORDINATES_JACOBI){
+        reb_exit("Symplectic correctors are only compatible with Jacobi coordinates.");
+    }
     struct reb_particle* restrict const particles = r->particles;
     const int N = r->N;
     const int N_real = N-r->N_var;
@@ -570,19 +577,18 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
                 break;
         };
     }
-    double _dt2 = r->dt/2.;
     if (ri_whfast->is_synchronized){
         // First half DRIFT step
         if (ri_whfast->corrector){
             reb_whfast_apply_corrector(r, 1., ri_whfast->corrector, reb_whfast_corrector_Z);
         }
-        kepler_drift(r, _dt2);    // half timestep
+        reb_whfast_kepler_step(r, r->dt/2.);    // half timestep
     }else{
         // Combined DRIFT step
-        kepler_drift(r, r->dt);    // full timestep
+        reb_whfast_kepler_step(r, r->dt);    // full timestep
     }
 
-    reb_whfast_jump_step(r,_dt2);
+    reb_whfast_jump_step(r,r->dt/2.);
 
 
     // Prepare coordinates for KICK step
@@ -614,9 +620,9 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
     
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];
-        ri_whfast->p_jh[vc.index].x += _dt2*ri_whfast->p_jh[vc.index].vx;
-        ri_whfast->p_jh[vc.index].y += _dt2*ri_whfast->p_jh[vc.index].vy;
-        ri_whfast->p_jh[vc.index].z += _dt2*ri_whfast->p_jh[vc.index].vz;
+        ri_whfast->p_jh[vc.index].x += r->dt/2.*ri_whfast->p_jh[vc.index].vx;
+        ri_whfast->p_jh[vc.index].y += r->dt/2.*ri_whfast->p_jh[vc.index].vy;
+        ri_whfast->p_jh[vc.index].z += r->dt/2.*ri_whfast->p_jh[vc.index].vz;
         if (r->force_is_velocity_dependent){
             reb_transformations_jacobi_to_inertial_posvel(particles+vc.index, ri_whfast->p_jh+vc.index, particles, N_real);
         }else{
@@ -624,7 +630,7 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
         }
     }
 
-    r->t+=_dt2;
+    r->t+=r->dt/2.;
 }
 
 void reb_integrator_whfast_synchronize(struct reb_simulation* const r){
@@ -636,7 +642,7 @@ void reb_integrator_whfast_synchronize(struct reb_simulation* const r){
             sync_pj = malloc(sizeof(struct reb_particle)*r->N);
             memcpy(sync_pj,r->ri_whfast.p_jh,r->N*sizeof(struct reb_particle));
         }
-        kepler_drift(r, r->dt/2.);
+        reb_whfast_kepler_step(r, r->dt/2.);
         if (ri_whfast->corrector){
             reb_whfast_apply_corrector(r, -1., ri_whfast->corrector, reb_whfast_corrector_Z);
         }
@@ -668,18 +674,17 @@ void reb_integrator_whfast_part2(struct reb_simulation* const r){
     struct reb_particle* restrict const particles = r->particles;
     struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
     const int N_real = r->N-r->N_var;
-    double _dt2 = r->dt/2.;
     
-    interaction_step(r, ri_whfast->p_jh, r->G, r->softening, r->dt, N_real);
+    reb_whfast_interaction_step(r, r->dt);
     
-    reb_whfast_jump_step(r,_dt2);
+    reb_whfast_jump_step(r,r->dt/2.);
 
     ri_whfast->is_synchronized = 0;
     if (ri_whfast->safe_mode){
         reb_integrator_whfast_synchronize(r);
     }
     
-    r->t+=_dt2;
+    r->t+=r->dt/2.;
     r->dt_last_done = r->dt;
 
     
@@ -692,9 +697,9 @@ void reb_integrator_whfast_part2(struct reb_simulation* const r){
             struct reb_particle* const particles_var1 = particles + vc.index;
             const int index = vc.index;
             // Centre of mass
-            ri_whfast->p_jh[index].x += _dt2*ri_whfast->p_jh[index].vx;
-            ri_whfast->p_jh[index].y += _dt2*ri_whfast->p_jh[index].vy;
-            ri_whfast->p_jh[index].z += _dt2*ri_whfast->p_jh[index].vz;
+            ri_whfast->p_jh[index].x += r->dt/2.*ri_whfast->p_jh[index].vx;
+            ri_whfast->p_jh[index].y += r->dt/2.*ri_whfast->p_jh[index].vy;
+            ri_whfast->p_jh[index].z += r->dt/2.*ri_whfast->p_jh[index].vz;
             reb_transformations_jacobi_to_inertial_posvel(particles_var1, ri_whfast->p_jh+index, particles, N_real);
             reb_calculate_acceleration_var(r);
             const double dx = particles[0].x - particles[1].x;
