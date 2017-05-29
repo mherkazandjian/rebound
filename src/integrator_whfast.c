@@ -393,6 +393,36 @@ static void interaction_step(struct reb_simulation* const r, struct reb_particle
             break;
     };
 }
+static void reb_whfast_jump_step(const struct reb_simulation* const r, const double _dt){
+    const struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
+    struct reb_particle* const p_h = r->ri_whfast.p_jh;
+    const int N_real = r->N-r->N_var;
+    const double m0 = r->particles[0].m;
+    switch (ri_whfast->coordinates){
+        case REB_WHFAST_COORDINATES_JACOBI:
+            // Nothing to be done.
+            break;
+        case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            {
+            double px=0, py=0, pz=0;
+            for(int i=1;i<N_real;i++){
+                const double m = r->particles[i].m;
+                px += m * p_h[i].vx;
+                py += m * p_h[i].vy;
+                pz += m * p_h[i].vz;
+            }
+            for(int i=1;i<N_real;i++){
+                p_h[i].x += _dt * (px/m0);
+                p_h[i].y += _dt * (py/m0);
+                p_h[i].z += _dt * (pz/m0);
+            }
+            }
+            break;
+        case REB_WHFAST_COORDINATES_WHDS:
+            // TODO 
+            break;
+    };
+}
 
 /***************************** 
  * DKD Scheme                */
@@ -551,6 +581,10 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
         // Combined DRIFT step
         kepler_drift(r, r->dt);    // full timestep
     }
+
+    reb_whfast_jump_step(r,_dt2);
+
+
     // Prepare coordinates for KICK step
     switch (ri_whfast->coordinates){
         case REB_WHFAST_COORDINATES_JACOBI:
@@ -632,9 +666,12 @@ void reb_integrator_whfast_part2(struct reb_simulation* const r){
     struct reb_particle* restrict const particles = r->particles;
     struct reb_simulation_integrator_whfast* const ri_whfast = &(r->ri_whfast);
     const int N_real = r->N-r->N_var;
-    interaction_step(r, ri_whfast->p_jh, r->G, r->softening, r->dt, N_real);
-
     double _dt2 = r->dt/2.;
+    
+    interaction_step(r, ri_whfast->p_jh, r->G, r->softening, r->dt, N_real);
+    
+    reb_whfast_jump_step(r,_dt2);
+
     ri_whfast->is_synchronized = 0;
     if (ri_whfast->safe_mode){
         reb_integrator_whfast_synchronize(r);
