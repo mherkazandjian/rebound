@@ -329,6 +329,7 @@ void kepler_step(const struct reb_simulation* const r, struct reb_particle* cons
  * Interaction Hamiltonian  */
 
 static void reb_whfast_interaction_step(struct reb_simulation* const r, const double _dt){
+    const double m0 = r->particles[0].m;
     const int N_real = r->N-r->N_var;
     const double G = r->G;
     const double softening = r->softening;
@@ -347,7 +348,7 @@ static void reb_whfast_interaction_step(struct reb_simulation* const r, const do
                 struct reb_variational_configuration const vc = r->var_config[v];
                 reb_transformations_inertial_to_jacobi_acc(r->particles+vc.index, p_j+vc.index, r->particles, N_real);
             }
-            double eta = r->particles[0].m;
+            double eta = m0;
             for (unsigned int i=1;i<N_real;i++){
                 // Eq 132
                 const struct reb_particle pji = p_j[i];
@@ -393,7 +394,12 @@ static void reb_whfast_interaction_step(struct reb_simulation* const r, const do
             }
             break;
         case REB_WHFAST_COORDINATES_WHDS:
-            // TODO 
+            for (unsigned int i=1;i<N_real;i++){
+                const double mi = particles[i].m;
+                p_j[i].vx += _dt*(m0+mi)*particles[i].ax/m0;
+                p_j[i].vy += _dt*(m0+mi)*particles[i].ay/m0;
+                p_j[i].vz += _dt*(m0+mi)*particles[i].az/m0;
+            }
             break;
     };
 }
@@ -423,7 +429,23 @@ static void reb_whfast_jump_step(const struct reb_simulation* const r, const dou
             }
             break;
         case REB_WHFAST_COORDINATES_WHDS:
-            // TODO 
+            {
+            double px = 0.;
+            double py = 0.;
+            double pz = 0.;
+            for(int i=1;i<N_real;i++){
+                const double m = r->particles[i].m;
+                px += m * p_h[i].vx / (m0+m);
+                py += m * p_h[i].vy / (m0+m);
+                pz += m * p_h[i].vz / (m0+m);
+             }
+             for(int i=1;i<N_real;i++){
+                 const double m = r->particles[i].m;
+                p_h[i].x += _dt * (px - (m * p_h[i].vx / (m0+m)) );
+                p_h[i].y += _dt * (py - (m * p_h[i].vy / (m0+m)) );
+                p_h[i].z += _dt * (pz - (m * p_h[i].vz / (m0+m)) );
+            }
+            }
             break;
     };
 }
