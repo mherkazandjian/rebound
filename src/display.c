@@ -614,7 +614,7 @@ void reb_display_init(struct reb_simulation * const r){
     data->spheres       = 0; 
     data->pause         = 0; 
     data->multisample = 1; 
-    if (data->r->integrator==REB_INTEGRATOR_WHFAST || data->r->integrator==REB_INTEGRATOR_WHFASTHELIO){
+    if (data->r->integrator==REB_INTEGRATOR_WHFAST){
         data->wire          = 1; 
     }else{
         data->wire          = 0; 
@@ -1122,7 +1122,7 @@ void reb_display_prepare_data(struct reb_simulation* const r, int orbits){
     struct reb_display_data* data = r->display_data;
     struct reb_simulation* const r_copy = data->r_copy;
 
-    // this only does something for WHFAST + WHFASTHELIO + MERCURIUS
+    // this only does something for WHFAST + MERCURIUS
     reb_integrator_synchronize(r_copy);
        
     // Update data on GPU 

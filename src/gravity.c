@@ -397,7 +397,7 @@ void reb_calculate_acceleration(struct reb_simulation* r){
             const double m0 = r->ri_mercurius.m0;
             unsigned int coord = r->ri_mercurius.coordinates;
             switch (r->ri_mercurius.mode){
-                case 0: // WHFASTHelio part
+                case 0: // WHFAST part
                 {
                     const double* const rhill = r->ri_mercurius.rhill;
 #pragma omp parallel for schedule(guided)
@@ -533,7 +533,7 @@ void reb_calculate_acceleration(struct reb_simulation* r){
                     }
                 }
                 break;
-                case 2: // Skipp WHFASTHelio part because of synchronization
+                case 2: // Skipp WHFAST part because of synchronization
                 break;
             }
 		}
