@@ -119,6 +119,7 @@ void reb_integrator_hermes_part1(struct reb_simulation* r){
     
     reb_integrator_hermes_apply_forces(r, r->ri_hermes.a_i);
     
+    r->ri_whfast.coordinates = REB_WHFAST_COORDINATES_HELIOCENTRIC;
     reb_integrator_whfast_part1(r);
 }
 
