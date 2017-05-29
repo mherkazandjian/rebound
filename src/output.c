@@ -307,7 +307,8 @@ void reb_output_binary(struct reb_simulation* r, char* filename){
     WRITE_FIELD(WHFAST_KEEPUNSYNC,  &r->ri_whfast.keep_unsynchronized,  sizeof(unsigned int));
     WRITE_FIELD(WHFAST_ISSYNCHRON,  &r->ri_whfast.is_synchronized,      sizeof(unsigned int));
     WRITE_FIELD(WHFAST_TIMESTEPWARN,&r->ri_whfast.timestep_warning,     sizeof(unsigned int));
-    WRITE_FIELD(WHFAST_PJ,          r->ri_whfast.p_jh,                   sizeof(struct reb_particle)*r->ri_whfast.allocated_N);
+    WRITE_FIELD(WHFAST_PJ,          r->ri_whfast.p_jh,                  sizeof(struct reb_particle)*r->ri_whfast.allocated_N);
+    WRITE_FIELD(WHFAST_COORDINATES, &r->ri_whfast.coordinates,          sizeof(int));
     WRITE_FIELD(IAS15_EPSILON,      &r->ri_ias15.epsilon,               sizeof(double));
     WRITE_FIELD(IAS15_MINDT,        &r->ri_ias15.min_dt,                sizeof(double));
     WRITE_FIELD(IAS15_EPSILONGLOBAL,&r->ri_ias15.epsilon_global,        sizeof(unsigned int));

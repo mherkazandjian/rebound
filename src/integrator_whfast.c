@@ -586,29 +586,31 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
 
 
     // Prepare coordinates for KICK step
-    switch (ri_whfast->coordinates){
-        case REB_WHFAST_COORDINATES_JACOBI:
-            if (r->force_is_velocity_dependent){
+    if (r->force_is_velocity_dependent){
+        switch (ri_whfast->coordinates){
+            case REB_WHFAST_COORDINATES_JACOBI:
                 reb_transformations_jacobi_to_inertial_posvel(particles, ri_whfast->p_jh, particles, N_real);
-            }else{
-                reb_transformations_jacobi_to_inertial_pos(particles, ri_whfast->p_jh, particles, N_real);
-            }
-            break;
-        case REB_WHFAST_COORDINATES_HELIOCENTRIC:
-            if (r->force_is_velocity_dependent){
+                break;
+            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
                 reb_transformations_democratic_heliocentric_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
-            }else{
-                reb_transformations_democratic_heliocentric_to_inertial_pos(particles, ri_whfast->p_jh, N_real);
-            }
-            break;
-        case REB_WHFAST_COORDINATES_WHDS:
-            if (r->force_is_velocity_dependent){
+                break;
+            case REB_WHFAST_COORDINATES_WHDS:
                 reb_transformations_whds_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
-            }else{
-                reb_transformations_whds_to_inertial_pos(particles, ri_whfast->p_jh, N_real);
-            }
-            break;
-    };
+                break;
+        };
+    }else{
+        switch (ri_whfast->coordinates){
+            case REB_WHFAST_COORDINATES_JACOBI:
+                reb_transformations_jacobi_to_inertial_posvel(particles, ri_whfast->p_jh, particles, N_real);
+                break;
+            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+                reb_transformations_democratic_heliocentric_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
+                break;
+            case REB_WHFAST_COORDINATES_WHDS:
+                reb_transformations_whds_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
+                break;
+        };
+    }
     
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];

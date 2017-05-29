@@ -237,6 +237,7 @@ void reb_create_simulation_from_binary_with_messages(struct reb_simulation* r, c
             CASE(WHFAST_KEEPUNSYNC,  &r->ri_whfast.keep_unsynchronized);
             CASE(WHFAST_ISSYNCHRON,  &r->ri_whfast.is_synchronized);
             CASE(WHFAST_TIMESTEPWARN,&r->ri_whfast.timestep_warning);
+            CASE(WHFAST_COORDINATES, &r->ri_whfast.coordinates);
             CASE(IAS15_EPSILON,      &r->ri_ias15.epsilon);
             CASE(IAS15_MINDT,        &r->ri_ias15.min_dt);
             CASE(IAS15_EPSILONGLOBAL,&r->ri_ias15.epsilon_global);
