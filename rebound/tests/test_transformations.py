@@ -18,7 +18,7 @@ def getc(sim):
 
 class TestTransformations(unittest.TestCase):
     
-    def test_democratic_helio(self):
+    def test_democratichelio(self):
         sim = rebound.Simulation()
         sim.add(m=1.2354)
         sim.add(m=0.1,a=1.24,e=0.123,inc=0.14,omega=0.12,Omega=0.64,l=0.632)
@@ -31,12 +31,12 @@ class TestTransformations(unittest.TestCase):
         c0 = getc(sim)
 
         cl = rebound.clibrebound
-        cl.reb_transformations_inertial_to_democratic_heliocentric_posvel(sim._particles,p,sim.N)
+        cl.reb_transformations_inertial_to_democraticheliocentric_posvel(sim._particles,p,sim.N)
 
         for i in range(sim.N):
             sim.particles[i].x = 1234.
             sim.particles[i].vx = 1234.
-        cl.reb_transformations_democratic_heliocentric_to_inertial_posvel(sim._particles,p,sim.N)
+        cl.reb_transformations_democraticheliocentric_to_inertial_posvel(sim._particles,p,sim.N)
         
         c1 = getc(sim)
         
@@ -45,7 +45,7 @@ class TestTransformations(unittest.TestCase):
         
         for i in range(sim.N):
             sim.particles[i].x = 1234.
-        cl.reb_transformations_democratic_heliocentric_to_inertial_pos(sim._particles,p,sim.N)
+        cl.reb_transformations_democraticheliocentric_to_inertial_pos(sim._particles,p,sim.N)
         
         c1 = getc(sim)
         

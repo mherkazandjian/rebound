@@ -1110,9 +1110,8 @@ int reb_display_copy_data(struct reb_simulation* const r){
             data->allocated_N_mercurius = r->ri_mercurius.allocatedN;
             data->p_h_copy = realloc(data->p_h_copy,data->allocated_N_mercurius*sizeof(struct reb_particle));
         }
-        memcpy(data->p_h_copy, r->ri_mercurius.p_h, data->allocated_N_mercurius*sizeof(struct reb_particle));
+        memcpy(data->p_h_copy, r->ri_whfast.p_jh, data->allocated_N_whfast*sizeof(struct reb_particle));
     }
-    data->r_copy->ri_mercurius.p_h= data->p_h_copy;
     
     return size_changed;
 }

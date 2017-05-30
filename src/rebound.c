@@ -343,7 +343,6 @@ void reb_reset_temporary_pointers(struct reb_simulation* const r){
     r->ri_mercurius.encounterIndicies = NULL;
     r->ri_mercurius.encounterAllocatedN = 0;
     r->ri_mercurius.encounterParticles = NULL;
-    r->ri_mercurius.p_h = NULL;
     r->ri_mercurius.p_hold = NULL;
 
     // ********** JANUS
@@ -493,7 +492,6 @@ void reb_init_simulation(struct reb_simulation* r){
     r->ri_mercurius.recalculate_rhill_this_timestep = 0;
     r->ri_mercurius.is_synchronized = 1;
     r->ri_mercurius.encounterN = 0;
-    r->ri_mercurius.coordinates = 0;
     r->ri_mercurius.m0 = 0;
     r->ri_mercurius.rcrit = 3;
 

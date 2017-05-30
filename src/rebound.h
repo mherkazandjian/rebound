@@ -156,7 +156,6 @@ struct reb_simulation_integrator_ias15 {
  */
 struct reb_simulation_integrator_mercurius {
     double rcrit;               ///< Critical radius in units of Hill radii
-    unsigned int coordinates;   ///< Coordinate system. 0 = democratic heliocentric, 1 = WHDS
     
     /** 
      * @brief Setting this flag to one will recalculate heliocentric coordinates from the particle structure at the beginning of the next timestep. 
@@ -198,7 +197,6 @@ struct reb_simulation_integrator_mercurius {
     double* encounterRhill;
     unsigned int* encounterIndicies;
     struct reb_particle* encounterParticles;
-    struct reb_particle* restrict p_h;
     struct reb_particle* restrict p_hold;
 };
 
@@ -1637,7 +1635,7 @@ void reb_transformations_jacobi_to_inertial_acc(struct reb_particle* const parti
  * @param p_h Particles array in which the democratic heliocentric quantities will be stored.
  * @param N number of particles in the array.
  */
-void reb_transformations_inertial_to_democratic_heliocentric_posvel(const struct reb_particle* const particles, struct reb_particle* const p_h, const int N);
+void reb_transformations_inertial_to_democraticheliocentric_posvel(const struct reb_particle* const particles, struct reb_particle* const p_h, const int N);
 /** @} */
 /**
  * \name From democratic heliocentric to inertial coordinates
@@ -1648,8 +1646,8 @@ void reb_transformations_inertial_to_democratic_heliocentric_posvel(const struct
  * @param p_h Particles array in which the democratic heliocentric quantities will be stored.
  * @param N number of particles in the array.
  */
-void reb_transformations_democratic_heliocentric_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_h, const int N);
-void reb_transformations_democratic_heliocentric_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_h, const int N);
+void reb_transformations_democraticheliocentric_to_inertial_pos(struct reb_particle* const particles, const struct reb_particle* const p_h, const int N);
+void reb_transformations_democraticheliocentric_to_inertial_posvel(struct reb_particle* const particles, const struct reb_particle* const p_h, const int N);
 /** @} */
 /**
  * \name From inertial to WHDS coordinates
