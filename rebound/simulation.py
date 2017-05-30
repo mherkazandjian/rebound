@@ -25,6 +25,7 @@ BOUNDARIES = {"none": 0, "open": 1, "periodic": 2, "shear": 3}
 GRAVITIES = {"none": 0, "basic": 1, "compensated": 2, "tree": 3, "mercurius": 4}
 COLLISIONS = {"none": 0, "direct": 1, "tree": 2, "mercurius": 3}
 VISUALIZATIONS = {"none": 0, "opengl": 1, "webgl": 2}
+COORDINATES = {"jacobi": 0, "democraticheliocentric": 1, "whds": 2}
 BINARY_WARNINGS = [
     ("Cannot read binary file. Check filename and file contents.", 1),
     ("Binary file was saved with a different version of REBOUND. Binary format might have changed.", 2),
@@ -140,6 +141,11 @@ class reb_simulation_integrator_whfast(Structure):
         inbetween timesteps.  After every timestep the flag is set back 
         to 0, so if you continuously update the particles manually, 
         you need to set this flag to 1 after every timestep.
+    :ivar string coordinates:
+        Sets the internal coordinate system that WHFast is using. By default
+        it uses ``'jacobi'`` (=0) coordinates. Other options are 
+        ``'democraticheliocentric'`` (=1) and ``'whds'`` (=2). See Hernandez 
+        and Dehnen (2017) for more information.
     :ivar int safe_mode:
         If safe_mode is 1 (default) particles can be modified between
         timesteps and particle velocities and positions are always synchronised.
@@ -148,7 +154,7 @@ class reb_simulation_integrator_whfast(Structure):
         on advanced WHFast usage to learn more.
     """
     _fields_ = [("corrector", c_uint),
-                ("coordinates", c_uint),
+                ("_coordinates", c_uint),
                 ("recalculate_coordinates_this_timestep", c_uint),
                 ("safe_mode", c_uint),
                 ("p_jh", POINTER(Particle)),
@@ -157,6 +163,32 @@ class reb_simulation_integrator_whfast(Structure):
                 ("allocatedN", c_uint),
                 ("timestep_warning", c_uint),
                 ("recalculate_coordinates_but_not_synchronized_warning", c_uint)]
+    @property
+    def coordinates(self):
+        """
+        Get or set the internal coordinate system.
+
+        Available coordinate systems are:
+
+        - ``'jacobi'`` (default)
+        - ``'democraticheliocentric'``
+        - ``'whds'``
+        """
+        i = self._coordinates
+        for name, _i in COORDINATES.items():
+            if i==_i:
+                return name
+        return i
+    @coordinates.setter
+    def coordinates(self, value):
+        if isinstance(value, int):
+            self._coordinates = c_uint(value)
+        elif isinstance(value, basestring):
+            value = value.lower()
+            if value in COORDINATES: 
+                self._coordinates = COORDINATES[value]
+            else:
+                raise ValueError("Warning. Coordinate system not found.")
 
 class Orbit(Structure):
     """
