@@ -386,7 +386,7 @@ static void reb_whfast_interaction_step(struct reb_simulation* const r, const do
             }
             }
             break;
-        case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+        case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
             for (unsigned int i=1;i<N_real;i++){
                 p_j[i].vx += _dt*particles[i].ax;
                 p_j[i].vy += _dt*particles[i].ay;
@@ -412,7 +412,7 @@ static void reb_whfast_jump_step(const struct reb_simulation* const r, const dou
         case REB_WHFAST_COORDINATES_JACOBI:
             // Nothing to be done.
             break;
-        case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+        case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
             {
             double px=0, py=0, pz=0;
             for(int i=1;i<N_real;i++){
@@ -465,11 +465,10 @@ static void reb_whfast_kepler_step(const struct reb_simulation* const r, const d
             case REB_WHFAST_COORDINATES_JACOBI:
                 eta += p_j[i].m;
                 break;
-            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
                 //  eta = m0
                 break;
             case REB_WHFAST_COORDINATES_WHDS:
-                // TODO
                 eta = m0+p_j[i].m;
                 break;
         };
@@ -591,7 +590,7 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
                     reb_transformations_inertial_to_jacobi_posvel(particles+vc.index, ri_whfast->p_jh+vc.index, particles, N_real);
                 }
                 break;
-            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
                 reb_transformations_inertial_to_democratic_heliocentric_posvel(particles, ri_whfast->p_jh, N_real);
                 break;
             case REB_WHFAST_COORDINATES_WHDS:
@@ -619,7 +618,7 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
             case REB_WHFAST_COORDINATES_JACOBI:
                 reb_transformations_jacobi_to_inertial_posvel(particles, ri_whfast->p_jh, particles, N_real);
                 break;
-            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
                 reb_transformations_democratic_heliocentric_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
                 break;
             case REB_WHFAST_COORDINATES_WHDS:
@@ -631,7 +630,7 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
             case REB_WHFAST_COORDINATES_JACOBI:
                 reb_transformations_jacobi_to_inertial_posvel(particles, ri_whfast->p_jh, particles, N_real);
                 break;
-            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
                 reb_transformations_democratic_heliocentric_to_inertial_posvel(particles, ri_whfast->p_jh, N_real);
                 break;
             case REB_WHFAST_COORDINATES_WHDS:
@@ -672,7 +671,7 @@ void reb_integrator_whfast_synchronize(struct reb_simulation* const r){
             case REB_WHFAST_COORDINATES_JACOBI:
                 reb_transformations_jacobi_to_inertial_posvel(r->particles, ri_whfast->p_jh, r->particles, N_real);
                 break;
-            case REB_WHFAST_COORDINATES_HELIOCENTRIC:
+            case REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC:
                 reb_transformations_democratic_heliocentric_to_inertial_posvel(r->particles, ri_whfast->p_jh, N_real);
                 break;
             case REB_WHFAST_COORDINATES_WHDS:

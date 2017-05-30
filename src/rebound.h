@@ -281,9 +281,9 @@ struct reb_simulation_integrator_whfast {
      * @brief Chooses the coordinate system for the WHFast algorithm. Default is Jacobi Coordinates.
      */
     enum {
-        REB_WHFAST_COORDINATES_JACOBI = 0,          ///< Jacobi coordinates (default)
-        REB_WHFAST_COORDINATES_HELIOCENTRIC = 1,    ///< Democratic Heliocentric coordinates
-        REB_WHFAST_COORDINATES_WHDS = 2,            ///< WHDS coordinates
+        REB_WHFAST_COORDINATES_JACOBI = 0,                      ///< Jacobi coordinates (default)
+        REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC = 1,      ///< Democratic Heliocentric coordinates
+        REB_WHFAST_COORDINATES_WHDS = 2,                        ///< WHDS coordinates (Hernandez and Dehnen, 2017)
         } coordinates;
 
     /** 
