@@ -430,9 +430,7 @@ void reb_whfast_jump_step(const struct reb_simulation* const r, const double _dt
             break;
         case REB_WHFAST_COORDINATES_WHDS:
             {
-            double px = 0.;
-            double py = 0.;
-            double pz = 0.;
+            double px=0, py=0, pz=0;
             for(int i=1;i<N_real;i++){
                 const double m = r->particles[i].m;
                 px += m * p_h[i].vx / (m0+m);
@@ -488,7 +486,6 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     struct reb_particle* restrict const particles = r->particles;
     const int N_real = r->N-r->N_var;
     reb_whfast_kepler_step(r, a);
-    reb_whfast_com_step(r, a);
     reb_transformations_jacobi_to_inertial_pos(particles, ri_whfast->p_jh, particles, N_real);
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];
@@ -498,7 +495,6 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     reb_update_acceleration(r);
     reb_whfast_interaction_step(r, -b);
     reb_whfast_kepler_step(r, -2.*a);
-    reb_whfast_com_step(r, -2.*a);
     reb_transformations_jacobi_to_inertial_pos(particles, ri_whfast->p_jh, particles, N_real);
     for (int v=0;v<r->var_config_N;v++){
         struct reb_variational_configuration const vc = r->var_config[v];
@@ -508,7 +504,6 @@ static void reb_whfast_corrector_Z(struct reb_simulation* r, const double a, con
     reb_update_acceleration(r);
     reb_whfast_interaction_step(r, b);
     reb_whfast_kepler_step(r, a);
-    reb_whfast_com_step(r, a);
 }
 
 void reb_whfast_apply_corrector(struct reb_simulation* r, double inv, int order, void (*corrector_Z)(struct reb_simulation*, const double, const double)){
@@ -588,7 +583,6 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
                 ri_whfast->recalculate_coordinates_but_not_synchronized_warning++;
             }
         }
-        ri_whfast->recalculate_coordinates_this_timestep = 0;
         switch (ri_whfast->coordinates){
             case REB_WHFAST_COORDINATES_JACOBI:
                 reb_transformations_inertial_to_jacobi_posvel(particles, ri_whfast->p_jh, particles, N_real);
@@ -604,6 +598,7 @@ void reb_integrator_whfast_part1(struct reb_simulation* const r){
                 reb_transformations_inertial_to_whds_posvel(particles, ri_whfast->p_jh, N_real);
                 break;
         };
+        ri_whfast->recalculate_coordinates_this_timestep = 0;
     }
     if (ri_whfast->is_synchronized){
         // First half DRIFT step
